@@ -45,6 +45,18 @@ For secure certificate-image uploads, run [supabase/certificates_storage.sql](su
 
 For the admin certificate manager, run [supabase/certificates.sql](supabase/certificates.sql) once in the Supabase SQL Editor. This creates the certificates table, storage bucket, and required access policies.
 
+## Projects database
+
+Run [supabase/projects.sql](supabase/projects.sql) once in the Supabase SQL Editor before using the admin Projects page. It creates the `public.projects` table, enables row-level security, and grants the admin authenticated user full CRUD access.
+
+Create a public Storage bucket named `projects` and run [supabase/projects_storage.sql](supabase/projects_storage.sql) so project-image uploads are allowed for the same admin account.
+
+## Tech stack database
+
+Run [supabase/tech_stack.sql](supabase/tech_stack.sql) once in the Supabase SQL Editor before using the admin Tech Stack page. It creates the `public.tech_stack` table, enables row-level security, and grants the admin authenticated user full insert/update/delete access.
+
+Create a public Storage bucket named `tech-stack` and run [supabase/tech_stack_storage.sql](supabase/tech_stack_storage.sql) so logo uploads are allowed for the same admin account.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

@@ -14,6 +14,8 @@ type TechItem = {
   [key: string]: unknown;
 };
 
+const STORAGE_BUCKET_NAME = "tech-stack";
+
 export default function TechStackPage() {
   const [techStacks, setTechStacks] = useState<TechItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,46 +88,81 @@ export default function TechStackPage() {
 
     setSaving(true);
 
-    let logoUrl = preview;
+    try {
+      const currentTech = editId
+        ? techStacks.find((item) => item.id === editId)
+        : null;
 
-    if (logo) {
-      const fileName = `tech-${Date.now()}-${logo.name}`;
+      let logoUrl = currentTech?.logo_url ?? "";
 
-      const { error: uploadError } = await supabase.storage
-        .from("tech-stack")
-        .upload(fileName, logo);
+      if (logo) {
+        const fileName = `tech-${Date.now()}-${logo.name}`;
 
-      if (!uploadError) {
+        const { error: uploadError } = await supabase.storage
+          .from(STORAGE_BUCKET_NAME)
+          .upload(fileName, logo);
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
         const { data } = supabase.storage
-          .from("tech-stack")
+          .from(STORAGE_BUCKET_NAME)
           .getPublicUrl(fileName);
 
         logoUrl = data.publicUrl;
       }
+
+      const payload = {
+        name: name.trim(),
+        logo_url: logoUrl,
+      };
+
+      let result;
+
+      if (editId) {
+        result = await supabase
+          .from("tech_stack")
+          .update(payload)
+          .eq("id", editId);
+      } else {
+        result = await supabase.from("tech_stack").insert([payload]);
+      }
+
+      if (result?.error) {
+        throw result.error;
+      }
+
+      setOpen(false);
+      resetForm();
+      await fetchTechStacks();
+
+      Swal.fire({
+        title: editId ? "Updated!" : "Added!",
+        text: editId
+          ? "Tech stack berhasil diperbarui."
+          : "Tech stack berhasil ditambahkan.",
+        icon: "success",
+        timer: 1800,
+        showConfirmButton: false,
+        background: "#111",
+        color: "#fff",
+      });
+    } catch (error) {
+      console.error("Tech save failed:", error);
+      Swal.fire({
+        title: "Failed",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Gagal menyimpan tech stack.",
+        icon: "error",
+        background: "#111",
+        color: "#fff",
+      });
+    } finally {
+      setSaving(false);
     }
-
-    if (editId) {
-      await supabase
-        .from("tech_stack")
-        .update({
-          name,
-          logo_url: logoUrl,
-        })
-        .eq("id", editId);
-    } else {
-      await supabase.from("tech_stack").insert([
-        {
-          name,
-          logo_url: logoUrl,
-        },
-      ]);
-    }
-
-    setSaving(false);
-    setOpen(false);
-    resetForm();
-
-    fetchTechStacks();
   };
 
   const handleDelete = async (id: number) => {
