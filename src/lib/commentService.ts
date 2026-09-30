@@ -1,5 +1,14 @@
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
 
+export type CommentReply = {
+  id: string | number
+  name: string
+  username?: string
+  message: string
+  created_at?: string
+  is_admin?: boolean
+}
+
 export type CommentItem = {
   id: number
   name: string
@@ -9,6 +18,8 @@ export type CommentItem = {
   is_pinned?: boolean
   created_at?: string
   is_liked?: boolean
+  liked_by_admin?: boolean
+  replies?: CommentReply[]
 }
 
 const LOCAL_COMMENTS_KEY = 'portfolio-comments'
@@ -49,19 +60,29 @@ export const fetchCommentsService = async (visitorId?: string | null) => {
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  const comments = (data ?? []) as CommentItem[]
+  const comments = (data ?? []).map((item: any) => ({
+    ...item,
+    replies: Array.isArray(item.replies) ? item.replies : [],
+  })) as CommentItem[]
+
   if (!visitorId) return comments.map((item) => ({ ...item, is_liked: false }))
 
-  const { data: likes, error: likesError } = await supabase
-    .from('comment_likes')
-    .select('comment_id')
-    .eq('user_id', visitorId)
-  if (likesError) throw likesError
+  try {
+    const { data: likes, error: likesError } = await supabase
+      .from('comment_likes')
+      .select('comment_id')
+      .eq('user_id', visitorId)
+    if (!likesError && likes) {
+      const likedCommentIds = new Set(
+        (likes as { comment_id: number }[] ?? []).map((like) => like.comment_id),
+      )
+      return comments.map((item) => ({ ...item, is_liked: likedCommentIds.has(item.id) }))
+    }
+  } catch {
+    // If comment_likes table is not queryable, proceed with default false
+  }
 
-  const likedCommentIds = new Set(
-    (likes as { comment_id: number }[] ?? []).map((like) => like.comment_id),
-  )
-  return comments.map((item) => ({ ...item, is_liked: likedCommentIds.has(item.id) }))
+  return comments.map((item) => ({ ...item, is_liked: false }))
 }
 
 export const toggleCommentLikeService = async (
@@ -79,19 +100,43 @@ export const toggleCommentLikeService = async (
     return updated.find((item) => item.id === id)!
   }
 
-  const query = isLiked
-    ? supabase.from('comment_likes').delete().eq('comment_id', id).eq('user_id', visitorId)
-    : supabase.from('comment_likes').insert({ comment_id: id, user_id: visitorId })
-  const { error } = await query
-  if (error) throw error
+  // Attempt using comment_likes table
+  try {
+    const query = isLiked
+      ? supabase.from('comment_likes').delete().eq('comment_id', id).eq('user_id', visitorId)
+      : supabase.from('comment_likes').insert({ comment_id: id, user_id: visitorId })
+    const { error } = await query
 
-  const { data, error: commentError } = await supabase
+    if (!error) {
+      const { data, error: commentError } = await supabase
+        .from('comments')
+        .select('likes')
+        .eq('id', id)
+        .single()
+      if (!commentError && data) {
+        return { likes: data.likes ?? 0, is_liked: !isLiked }
+      }
+    }
+  } catch {
+    // Fallback directly to comments table update if comment_likes is not set up
+  }
+
+  // Fallback: direct comments update
+  const { data: currentComment } = await supabase
     .from('comments')
     .select('likes')
     .eq('id', id)
     .single()
-  if (commentError) throw commentError
-  return { likes: data.likes ?? 0, is_liked: !isLiked }
+
+  const currentLikes = currentComment?.likes ?? 0
+  const newLikes = isLiked ? Math.max(currentLikes - 1, 0) : currentLikes + 1
+
+  await supabase
+    .from('comments')
+    .update({ likes: newLikes })
+    .eq('id', id)
+
+  return { likes: newLikes, is_liked: !isLiked }
 }
 
 export const uploadCommentImageService = async (
@@ -131,6 +176,7 @@ export const createCommentService = async ({
       is_pinned: false,
       created_at: new Date().toISOString(),
       is_liked: false,
+      replies: [],
     }
     saveLocalComments([newComment, ...readLocalComments()])
     return newComment
@@ -153,5 +199,114 @@ export const createCommentService = async ({
 
   if (error) throw error
 
-  return data
+  return {
+    ...data,
+    replies: Array.isArray(data.replies) ? data.replies : [],
+  } as CommentItem
+}
+
+export const addReplyService = async ({
+  commentId,
+  name,
+  message,
+  isAdmin = false,
+}: {
+  commentId: number
+  name: string
+  message: string
+  isAdmin?: boolean
+}) => {
+  const newReply: CommentReply = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: name.trim(),
+    username: name.trim(),
+    message: message.trim(),
+    created_at: new Date().toISOString(),
+    is_admin: isAdmin,
+  }
+
+  if (!isSupabaseConfigured) {
+    const comments = readLocalComments()
+    const updated = comments.map((item) => {
+      if (item.id === commentId) {
+        const existingReplies = Array.isArray(item.replies) ? item.replies : []
+        return {
+          ...item,
+          replies: [...existingReplies, newReply],
+        }
+      }
+      return item
+    })
+    saveLocalComments(updated)
+    return newReply
+  }
+
+  // Fetch current comment replies from Supabase
+  const { data: currentComment, error: fetchError } = await supabase
+    .from('comments')
+    .select('replies')
+    .eq('id', commentId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  const existingReplies: CommentReply[] = Array.isArray(currentComment?.replies)
+    ? currentComment.replies
+    : []
+
+  const updatedReplies = [...existingReplies, newReply]
+
+  const { error: updateError } = await supabase
+    .from('comments')
+    .update({ replies: updatedReplies })
+    .eq('id', commentId)
+
+  if (updateError) throw updateError
+
+  return newReply
+}
+
+export const deleteReplyService = async ({
+  commentId,
+  replyId,
+}: {
+  commentId: number
+  replyId: string | number
+}) => {
+  if (!isSupabaseConfigured) {
+    const comments = readLocalComments()
+    const updated = comments.map((item) => {
+      if (item.id === commentId) {
+        const existingReplies = Array.isArray(item.replies) ? item.replies : []
+        return {
+          ...item,
+          replies: existingReplies.filter((r) => r.id !== replyId),
+        }
+      }
+      return item
+    })
+    saveLocalComments(updated)
+    return
+  }
+
+  const { data: currentComment, error: fetchError } = await supabase
+    .from('comments')
+    .select('replies')
+    .eq('id', commentId)
+    .single()
+
+  if (fetchError) throw fetchError
+
+  const existingReplies: CommentReply[] = Array.isArray(currentComment?.replies)
+    ? currentComment.replies
+    : []
+
+  const updatedReplies = existingReplies.filter((r) => r.id !== replyId)
+
+  const { error: updateError } = await supabase
+    .from('comments')
+    .update({ replies: updatedReplies })
+    .eq('id', commentId)
+
+  if (updateError) throw updateError
 }

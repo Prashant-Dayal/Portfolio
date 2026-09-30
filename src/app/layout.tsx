@@ -2,8 +2,12 @@ import "./globals.css";
 import RefreshRedirect from '@/components/RefreshRedirect'
 
 export const metadata = {
-  title: "Rifqi Muhammad Aliya",
+  title: "Prashant Dayal",
   description: "Portfolio...",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -16,7 +20,7 @@ export default function RootLayout({
       <body>
         <RefreshRedirect />
         {children}
-        </body>
+      </body>
     </html>
   );
 }

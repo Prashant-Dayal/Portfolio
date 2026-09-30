@@ -201,7 +201,7 @@ export default function About() {
               }}
             >
               Fresh Graduate SMK Rekayasa Perangkat Lunak lulusan 2026 dengan
-              passion di bidang frontend development dan UI modern. Berfokus
+              passion di bidang full stack development dan UI modern. Berfokus
               pada pembuatan website clean, responsif, dan visual yang kuat
               untuk menghadirkan pengalaman digital yang optimal.
             </motion.p>
@@ -247,7 +247,8 @@ export default function About() {
             >
               {/* DOWNLOAD CV */}
               <a
-                href="https://drive.google.com/file/d/1cFqZ0TY0U0I51K0Tchv8E4sbOv5yAZ9x/view?usp=drive_link"
+                href="/resume.pdf"
+                download="Prashant_Dayal_Resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ textDecoration: "none" }}
@@ -337,7 +338,7 @@ export default function About() {
                 }}
               >
                 <img
-                  src="/assets/PP.png"
+                  src="/assets/portfolio.png"
                   alt="Profile"
                   style={{
                     width: 240,
