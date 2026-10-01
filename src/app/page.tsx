@@ -15,7 +15,7 @@ import { hasPlayedIntro, setIntroPlayed } from '@/lib/introState'
 
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(false)
-  const [showApp, setShowApp] = useState(true)
+  const [showApp, setShowApp] = useState(false)
 
   useEffect(() => {
     const currentHash = window.location.hash
@@ -36,9 +36,6 @@ export default function Home() {
     const isReload = navigationType === 'reload'
 
     if (isReload && pathname === '/') {
-      sessionStorage.removeItem('introPlayed')
-      sessionStorage.removeItem('heroPlayed')
-
       if (window.location.hash) {
         history.replaceState(null, '', '/')
       }
