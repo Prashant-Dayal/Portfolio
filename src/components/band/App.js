@@ -49,51 +49,54 @@ export default function App() {
         zIndex: 1,
       }}
     >
-      <Canvas
-        gl={{ alpha: true }}
-        camera={{ position: [0, 0, 13], fov: 25 }}
-        style={{
-          background: 'transparent',
-          width: '100%',
-          height: '100%',
-          pointerEvents: isMobile ? 'none' : 'auto', // ✅ fix drag desktop
-        }}
-      >
-        <ambientLight intensity={Math.PI} />
+      {!isMobile && (
+        <Canvas
+          dpr={[1, 1.5]}
+          gl={{ alpha: true, antialias: false }}
+          camera={{ position: [0, 0, 13], fov: 25 }}
+          style={{
+            background: 'transparent',
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'auto',
+          }}
+        >
+          <ambientLight intensity={Math.PI} />
 
-        <Scene isMobile={isMobile} />
+          <Scene isMobile={false} />
 
-        <Environment blur={0.75}>
-          <Lightformer
-            intensity={2}
-            color="white"
-            position={[0, -1, 5]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={3}
-            color="white"
-            position={[-1, -1, 1]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={3}
-            color="white"
-            position={[1, 1, 1]}
-            rotation={[0, 0, Math.PI / 3]}
-            scale={[100, 0.1, 1]}
-          />
-          <Lightformer
-            intensity={10}
-            color="white"
-            position={[-10, 0, 14]}
-            rotation={[0, Math.PI / 2, Math.PI / 3]}
-            scale={[100, 10, 1]}
-          />
-        </Environment>
-      </Canvas>
+          <Environment blur={0.75}>
+            <Lightformer
+              intensity={2}
+              color="white"
+              position={[0, -1, 5]}
+              rotation={[0, 0, Math.PI / 3]}
+              scale={[100, 0.1, 1]}
+            />
+            <Lightformer
+              intensity={3}
+              color="white"
+              position={[-1, -1, 1]}
+              rotation={[0, 0, Math.PI / 3]}
+              scale={[100, 0.1, 1]}
+            />
+            <Lightformer
+              intensity={3}
+              color="white"
+              position={[1, 1, 1]}
+              rotation={[0, 0, Math.PI / 3]}
+              scale={[100, 0.1, 1]}
+            />
+            <Lightformer
+              intensity={10}
+              color="white"
+              position={[-10, 0, 14]}
+              rotation={[0, Math.PI / 2, Math.PI / 3]}
+              scale={[100, 10, 1]}
+            />
+          </Environment>
+        </Canvas>
+      )}
     </div>
   );
 }

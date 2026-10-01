@@ -1,4 +1,4 @@
-import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
+import { createBrowserClient } from "@supabase/ssr";
 
 type EmptyQueryResult = {
   data: unknown[] | Record<string, unknown> | null;
