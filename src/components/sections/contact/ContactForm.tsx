@@ -119,6 +119,11 @@ export default function ContactForm() {
         templateId,
         {
           to_email: 'dayalprashant766@gmail.com',
+          // Keep the standard EmailJS Contact Us variable names alongside the
+          // explicit names used by this template. This makes the visitor's
+          // address available in the email body and Reply-To configuration.
+          name,
+          email,
           from_name: name,
           from_email: email,
           reply_to: email,

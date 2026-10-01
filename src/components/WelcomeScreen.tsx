@@ -15,9 +15,10 @@ export default function WelcomeScreen() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        position: 'fixed',
+        // The parent motion element owns the fixed viewport layer. Keeping
+        // this child absolute lets its exit transform reliably move it away.
+        position: 'absolute',
         inset: 0,
-        zIndex: 9999,
         overflow: 'hidden',
         padding: '20px',
       }}
