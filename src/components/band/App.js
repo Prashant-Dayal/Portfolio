@@ -23,6 +23,11 @@ extend({ MeshLineGeometry, MeshLineMaterial });
 
 const GLTF_PATH = '/assets/kartu.glb';
 const TEXTURE_PATH = '/assets/bandd.png';
+const isFiniteVector = (vector) =>
+  vector != null &&
+  Number.isFinite(vector.x) &&
+  Number.isFinite(vector.y) &&
+  Number.isFinite(vector.z);
 
 useGLTF.preload(GLTF_PATH);
 useTexture.preload(TEXTURE_PATH);
@@ -193,28 +198,40 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
 
     if (fixed.current && j1.current && j2.current && j3.current && card.current) {
       [j1, j2].forEach((ref) => {
-        if (!ref.current.lerped) {
-          ref.current.lerped = new THREE.Vector3().copy(ref.current.translation());
+        const position = ref.current.translation();
+        if (!isFiniteVector(position)) return;
+
+        if (!isFiniteVector(ref.current.lerped)) {
+          ref.current.lerped = new THREE.Vector3().copy(position);
         }
 
-        const d = Math.max(
-          0.1,
-          Math.min(1, ref.current.lerped.distanceTo(ref.current.translation()))
-        );
+        const distance = ref.current.lerped.distanceTo(position);
+        if (!Number.isFinite(distance)) {
+          ref.current.lerped.copy(position);
+          return;
+        }
 
+        const d = Math.max(0.1, Math.min(1, distance));
         ref.current.lerped.lerp(
-          ref.current.translation(),
+          position,
           delta * (minSpeed + d * (maxSpeed - minSpeed))
         );
       });
 
-      curve.points[0].copy(j3.current.translation());
-      curve.points[1].copy(j2.current.lerped);
-      curve.points[2].copy(j1.current.lerped);
-      curve.points[3].copy(fixed.current.translation());
+      const ropePoints = [
+        j3.current.translation(),
+        j2.current.lerped,
+        j1.current.lerped,
+        fixed.current.translation(),
+      ];
 
-      if (band.current?.geometry) {
-        band.current.geometry.setPoints(curve.getPoints(32));
+      if (ropePoints.every(isFiniteVector)) {
+        ropePoints.forEach((point, index) => curve.points[index].copy(point));
+
+        const linePoints = curve.getPoints(32);
+        if (linePoints.every(isFiniteVector) && band.current?.geometry) {
+          band.current.geometry.setPoints(linePoints);
+        }
       }
 
       ang.copy(card.current.angvel());
