@@ -53,9 +53,8 @@ export default function Home() {
     if (shouldShowWelcome) {
       const timer = setTimeout(() => {
         setShowWelcome(false)
-        setShowApp(true)
         setIntroPlayed()
-      }, 2800)
+      }, 3800)
 
       return () => clearTimeout(timer)
     }
@@ -73,19 +72,14 @@ export default function Home() {
         <ContactSection />
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait" onExitComplete={() => setShowApp(true)}>
         {showWelcome && (
           <motion.div
             initial={{ y: 0 }}
             animate={{ y: 0 }}
             exit={{ y: '-100%' }}
-            onAnimationStart={(definition) => {
-              if (definition === 'exit') {
-                setShowApp(true)
-              }
-            }}
             transition={{
-              duration: 1.2,
+              duration: 0.75,
               ease: [0.76, 0, 0.24, 1],
             }}
             style={{
