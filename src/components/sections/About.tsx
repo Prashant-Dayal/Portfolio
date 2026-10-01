@@ -200,10 +200,7 @@ export default function About() {
                 maxWidth: isMobile ? "100%" : "490px",
               }}
             >
-              Fresh Graduate SMK Rekayasa Perangkat Lunak lulusan 2026 dengan
-              passion di bidang full stack development dan UI modern. Berfokus
-              pada pembuatan website clean, responsif, dan visual yang kuat
-              untuk menghadirkan pengalaman digital yang optimal.
+              I’m a Computer Science student at AKTU passionate about Full-Stack Development and emerging technologies. I enjoy building practical, user-focused web applications and continuously improving my development, problem-solving, and technical skills.
             </motion.p>
 
             {/* QUOTE */}
