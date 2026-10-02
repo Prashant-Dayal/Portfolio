@@ -23,11 +23,15 @@ extend({ MeshLineGeometry, MeshLineMaterial });
 
 const GLTF_PATH = '/assets/kartu.glb';
 const TEXTURE_PATH = '/assets/bandd.png';
-const isFiniteVector = (vector) =>
+const MAX_BAND_COORDINATE = 1e4;
+const isSafeVector = (vector) =>
   vector != null &&
   Number.isFinite(vector.x) &&
   Number.isFinite(vector.y) &&
-  Number.isFinite(vector.z);
+  Number.isFinite(vector.z) &&
+  Math.abs(vector.x) <= MAX_BAND_COORDINATE &&
+  Math.abs(vector.y) <= MAX_BAND_COORDINATE &&
+  Math.abs(vector.z) <= MAX_BAND_COORDINATE;
 
 useGLTF.preload(GLTF_PATH);
 useTexture.preload(TEXTURE_PATH);
@@ -193,15 +197,18 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
 
       if (screenY < limit) newY = card.current.translation().y;
 
-      card.current.setNextKinematicTranslation({ x: newX, y: newY, z: newZ });
+      const nextTranslation = { x: newX, y: newY, z: newZ };
+      if (isSafeVector(nextTranslation)) {
+        card.current.setNextKinematicTranslation(nextTranslation);
+      }
     }
 
     if (fixed.current && j1.current && j2.current && j3.current && card.current) {
       [j1, j2].forEach((ref) => {
         const position = ref.current.translation();
-        if (!isFiniteVector(position)) return;
+        if (!isSafeVector(position)) return;
 
-        if (!isFiniteVector(ref.current.lerped)) {
+        if (!isSafeVector(ref.current.lerped)) {
           ref.current.lerped = new THREE.Vector3().copy(position);
         }
 
@@ -225,11 +232,11 @@ function Band({ isMobile, maxSpeed = 50, minSpeed = 10 }) {
         fixed.current.translation(),
       ];
 
-      if (ropePoints.every(isFiniteVector)) {
+      if (ropePoints.every(isSafeVector)) {
         ropePoints.forEach((point, index) => curve.points[index].copy(point));
 
         const linePoints = curve.getPoints(32);
-        if (linePoints.every(isFiniteVector) && band.current?.geometry) {
+        if (linePoints.every(isSafeVector) && band.current?.geometry) {
           band.current.geometry.setPoints(linePoints);
         }
       }
