@@ -1,73 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio Website
+
+A modern, dynamic portfolio application built with **Next.js**, **TypeScript**, and **Supabase**, featuring interactive physics, persistent comments & likes, and full administrative management for projects, tech stack, and certificates.
+
+**Live Demo:** [portfolio-chi-three-n5ge93ngbg.vercel.app](https://portfolio-chi-three-n5ge93ngbg.vercel.app)  
+**Repository:** [Prashant-Dayal/Portfolio](https://github.com/Prashant-Dayal/Portfolio)
+
+---
+
+## Features
+
+- **Dynamic Interactive UI:** Built using Next.js with optimized fonts (`Geist`), smooth band physics, and customized Tailwind CSS styling.
+- **Persistent Comments & Likes:** Integrated with Supabase Anonymous Authentication to allow visitors to leave comments and interact without needing full user registration.
+- **Admin Management Dashboards:**
+  - **Projects:** Manage showcase projects with image uploads via Supabase Storage.
+  - **Tech Stack:** Maintain and display your technical skills dynamically with custom logos.
+  - **Certifications:** Upload and manage earned certificates securely.
+- **Automated Contact Form:** EmailJS integration with a fallback to native mail client support.
+
+---
+
+## Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/) (App Router)
+- **Language:** TypeScript, JavaScript
+- **Styling:** Tailwind CSS, PostCSS
+- **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL, Row Level Security, Storage)
+- **Email Service:** EmailJS
+- **Deployment:** Vercel
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-```
+Ensure you have **Node.js** (v18 or higher) and **npm** installed on your machine.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Contact form
-
-To send contact messages automatically, create an EmailJS service and template, then add these values to `.env.local`:
-
-```env
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=your_service_id
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=your_template_id
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=your_public_key
-```
-
-The EmailJS template should accept `to_email`, `from_name`, `from_email`, `reply_to`, and `message`. Without these values, the form opens a prefilled email in the visitor's mail application instead.
-
-## Persistent comments and likes
-
-To share comments between all visitors and keep them after a server restart, connect the app to Supabase by adding these values to `.env.local`:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-Run [supabase/comments_likes.sql](supabase/comments_likes.sql) once in the Supabase SQL Editor, then enable **Anonymous sign-ins** in Supabase Authentication → Providers. Each visitor receives an anonymous account, so they can like a comment once and remove only their own like. The database stores both comments and likes, making them persistent across deployments and restarts.
-
-## Certificates database
-
-Run [supabase/certificates.sql](supabase/certificates.sql) in the Supabase SQL Editor before opening the certificates dashboard. It creates the required `public.certificates` table and the public read policy.
-
-For secure certificate-image uploads, run [supabase/certificates_storage.sql](supabase/certificates_storage.sql) after creating a public `certificates` Storage bucket. The policy only permits the configured admin account to manage files.
-
-For the admin certificate manager, run [supabase/certificates.sql](supabase/certificates.sql) once in the Supabase SQL Editor. This creates the certificates table, storage bucket, and required access policies.
-
-## Projects database
-
-Run [supabase/projects.sql](supabase/projects.sql) once in the Supabase SQL Editor before using the admin Projects page. It creates the `public.projects` table, enables row-level security, and grants the admin authenticated user full CRUD access.
-
-Create a public Storage bucket named `projects` and run [supabase/projects_storage.sql](supabase/projects_storage.sql) so project-image uploads are allowed for the same admin account.
-
-## Tech stack database
-
-Run [supabase/tech_stack.sql](supabase/tech_stack.sql) once in the Supabase SQL Editor before using the admin Tech Stack page. It creates the `public.tech_stack` table, enables row-level security, and grants the admin authenticated user full insert/update/delete access.
-
-Create a public Storage bucket named `tech-stack` and run [supabase/tech_stack_storage.sql](supabase/tech_stack_storage.sql) so logo uploads are allowed for the same admin account.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Prashant-Dayal/Portfolio.git](https://github.com/Prashant-Dayal/Portfolio.git)
+   cd Portfolio
