@@ -22,8 +22,8 @@ type ProjectRecord = {
   id: number;
   title: string;
   description: string;
-  technologies: string;
-  key_features: string;
+  technologies: string | string[];
+  key_features: string | string[];
   image_url?: string | null;
   image_urls?: string[];
   live_url?: string | null;
@@ -55,6 +55,9 @@ export default function ProjectDetailPage() {
   const [currentImage, setCurrentImage] = useState(0);
   const [previewOpen, setPreviewOpen] = useState(false);
 
+  const asCommaSeparated = (value: unknown) =>
+    Array.isArray(value) ? value.join(", ") : typeof value === "string" ? value : "";
+
   const fetchProject = async () => {
     const { data } = await supabase
       .from("projects")
@@ -64,7 +67,15 @@ export default function ProjectDetailPage() {
 
     const projectData = data as ProjectRecord | null;
     setProject(projectData);
-    setForm(projectData ?? {});
+    setForm(
+      projectData
+        ? {
+            ...projectData,
+            technologies: asCommaSeparated(projectData.technologies),
+            key_features: asCommaSeparated(projectData.key_features),
+          }
+        : {}
+    );
   };
 
   useEffect(() => {
@@ -114,13 +125,18 @@ export default function ProjectDetailPage() {
 };
 
   const handleUpdate = async () => {
+  const updatedForm = {
+    ...form,
+    technologies: asCommaSeparated(form.technologies).split(",").map((item) => item.trim()).filter(Boolean),
+    key_features: asCommaSeparated(form.key_features).split(",").map((item) => item.trim()).filter(Boolean),
+  };
   const { error } = await supabase
     .from("projects")
-    .update(form)
+    .update(updatedForm)
     .eq("id", id);
 
   if (!error) {
-    setProject(form as ProjectRecord);
+    setProject(updatedForm as ProjectRecord);
     setEditMode(false);
 
     Swal.fire({
@@ -149,11 +165,11 @@ export default function ProjectDetailPage() {
       </div>
     );
 
-  const tech = (typeof form.technologies === "string" ? form.technologies : "")
+  const tech = asCommaSeparated(form.technologies)
     .split(",")
     .filter((t: string) => t.trim() !== "");
 
-  const features = (typeof form.key_features === "string" ? form.key_features : "")
+  const features = asCommaSeparated(form.key_features)
     .split(",")
     .filter((f: string) => f.trim() !== "");
 

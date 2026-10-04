@@ -23,8 +23,8 @@ import {
 type ProjectRecord = {
   title: string
   description: string
-  technologies: string
-  key_features: string
+  technologies: string | string[]
+  key_features: string | string[]
   image_url: string
   image_urls: string[]
   live_url: string
@@ -69,13 +69,12 @@ export default function PortfolioDetailPage() {
     return () => window.clearTimeout(timer)
   }, [id])
 
-  const tech = (project?.technologies || '')
-    .split(',')
-    .filter((t: string) => t.trim() !== '')
+  const toList = (value: string | string[] | null | undefined) =>
+    (Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : [])
+      .filter((item) => item.trim() !== '')
 
-  const features = (project?.key_features || '')
-    .split(',')
-    .filter((f: string) => f.trim() !== '')
+  const tech = toList(project?.technologies)
+  const features = toList(project?.key_features)
 
   const galleryImages =
     project?.image_urls && Array.isArray(project.image_urls)

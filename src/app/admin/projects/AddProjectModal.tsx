@@ -93,7 +93,11 @@ export default function AddProjectModal({
             .from("projects")
             .upload(fileName, image);
 
-        if (uploadError) continue;
+        if (uploadError) {
+          showToast(`Upload gagal: ${uploadError.message}`);
+          setLoading(false);
+          return;
+        }
 
         const { data } = supabase.storage
           .from("projects")
@@ -110,8 +114,8 @@ export default function AddProjectModal({
             description: desc,
             live_url: live || null,
             github_url: github || null,
-            technologies: tech,
-            key_features: features,
+            technologies: tech.split(",").map((item) => item.trim()).filter(Boolean),
+            key_features: features.split(",").map((item) => item.trim()).filter(Boolean),
             image_url: uploadedUrls[0] || null,
             image_urls: uploadedUrls,
           },
@@ -120,7 +124,7 @@ export default function AddProjectModal({
         .single();
 
       if (error) {
-        showToast("Gagal simpan");
+        showToast(`Gagal simpan: ${error.message}`);
         setLoading(false);
         return;
       }
